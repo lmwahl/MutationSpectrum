@@ -26,4 +26,4 @@ sequence is 3*N.
 program_name.makefile -- each of the C programs also has a makefile which can be used to compile it.
 
 Note that some of the programs above (as noted in their makefiles) depend on subroutines from Numerical Recipes in C (ANSI-C edition).
-The code from Numerical Recipes is proprietory and is not reproduced here.
+The code from Numerical Recipes is proprietary and is not reproduced here.
