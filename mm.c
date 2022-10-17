@@ -294,6 +294,8 @@ float gasdev(long *), poidev(float, long *), ran1(long *);
 }  // end of main
 
 void transition(int seq[MAXN],int pos,int newseq[MAXN])
+// using standard codon model order:
+// T = 0, C = 1, A = 2, G = 3
 {
 for (int i=0;i<N;i++) newseq[i]=seq[i];
 switch(seq[pos]) {
@@ -337,23 +339,23 @@ for (i=0;i<N;i++) newseq[i]=seq[i];
  if (muprob<ffixed) {  // we want AT to AT or GC to GC
   pos = (int)(N*(rand()/(double)RAND_MAX));
   switch(seq[pos]) {
-    case 0: newseq[pos] = 1; break;
-    case 1: newseq[pos] = 0; break;
-    case 2: newseq[pos] = 3; break;
-    case 3: newseq[pos] = 2; break;
+    case 0: newseq[pos] = 2; break;
+    case 2: newseq[pos] = 0; break;
+    case 1: newseq[pos] = 3; break;
+    case 3: newseq[pos] = 1; break;
    }
   }
  else {
   if (muprob<(ffixed+fts)) {   // we want GC to AT
    pos = (int)(N*(rand()/(double)RAND_MAX));
-   while (seq[pos]<2)  pos = (int)(N*(rand()/(double)RAND_MAX));
+   while ((seq[pos]==0 || seq[pos]==2)  pos = (int)(N*(rand()/(double)RAND_MAX));
    if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 0;
-   else newseq[pos] = 1;
+   else newseq[pos] = 2;
   }
   else {// we want AT to GC
    pos = (int)(N*(rand()/(double)RAND_MAX));
-   while (seq[pos]>1)  pos = (int)(N*(rand()/(double)RAND_MAX));
-   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 2;
+   while ((seq[pos]==1 || seq[pos]==3)  pos = (int)(N*(rand()/(double)RAND_MAX));
+   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 1;
    else newseq[pos] = 3;
   }
  }

@@ -1,6 +1,8 @@
 /* simulated adaptive walks with variable K in NK landscape */
 /* see tstv.c for a carefully commented version of the code  */
 
+// currently set up to write out fben for Ts and Tv separately to f01 data files //
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -18,22 +20,22 @@ void transition(int seq[], int n, int newseq[]);
 void transversion(int seq[], int n, int newseq[]);
 void mutation(int seq[],int newseq[],double ffixed, double fts); // at:gc
 
-int N=8;  // actual genome length, change this to change N
+int N=200;  // actual genome length, change this to change N
 
 
 void main()  //(int argc, char **argv)
 {
-int walklengths[18] = {1e2, 2e2, 3e2, 4e2, 5e2, 6e2, 7e2, 8e2, 9e2, 10e2, 12e2, 14e2, 16e2, 18e2, 2e3}, nlengths = 15;
+int walklengths[18] = {5e4}, nlengths = 1;
 int i,j,k,n, ilength, currentwalklength, nlookups, lookind;
-int nsteps, maxwalklength = 500;
-double ftstep=.1;
+int nsteps, maxwalklength = 6e4;
+double ftstep=1;
 double ffixed = .1;
 int nwalks = 500;
 double fts, ftsmu, fwt[MAXWALKS][MAXWALKLENGTHS], dfe;
 int nstepsall[MAXSTEPS][MAXWALKLENGTHS];
 int ift, iwalk, ispec, itry, pos;
 double oneoverNe = .00001;
-int nmutes = 5000; 
+ int nmutes = 5000;  // should not be greater than 3*N 
 int neighs[K][MAXN], anc[MAXN], tmpseq[MAXN];
 double w0, wseq[MAXSTEPS], wtmp, s;
 char filename[100];
@@ -89,7 +91,7 @@ double sums[20], dfemu;
 
  // wt bias is set here; mutant steps through ftstep in a later loop (ispec) //
  //     for (fts=ftstep;fts<=1-ffixed;fts+=ftstep) {
- for (fts=0.55; fts<=0.55; fts+=ftstep) {
+ for (fts=1.0/3.0; fts<=1.0/3.0; fts+=ftstep) {
 
  for (iwalk=0;iwalk<nwalks;iwalk++) {
    for (i=0;i<nlookups;i++)
@@ -108,7 +110,7 @@ double sums[20], dfemu;
    for (ilength=0;ilength<nlengths;ilength++) {
      maxwalklength = walklengths[ilength];
      // test opening the file before doing any more computation
-     sprintf(filename, "kany_data_%d/N%d_Sw_walk%d_fts%1.2f.out",K,N,maxwalklength,fts);
+     sprintf(filename, "kany_data_f01_%d/N%d_Sw_walk%d_fts%1.2f.out",K,N,maxwalklength,fts);
      fpout = fopen(filename,"w");
      if (fpout==NULL) { fprintf(stdout,"Unable to open output file\n"); exit(1);}  
      fclose(fpout);
@@ -171,7 +173,8 @@ double sums[20], dfemu;
    else sbardel[iwalk][ilength]=0;
    
   ispec = 0;
-   for (ftsmu=ftstep;ftsmu<=ftstep;ftsmu+=ftstep) {
+   for (ftsmu=0;ftsmu<=1;ftsmu+=1.0) {
+     // for (ftsmu=ftstep;ftsmu<=ftstep;ftsmu+=ftstep) {
      //   for (ftsmu=ftstep;ftsmu<=1-ftstep;ftsmu+=ftstep) {
     npos=0; nneg = 0; sumpos=0; sumneg=0;
     for (imute=0;imute<nmutes;imute++) {
@@ -204,7 +207,12 @@ double sums[20], dfemu;
 
  // all the walks are now finished, save the results to files
    for (ilength=0;ilength<nlengths;ilength++) {
-     sprintf(filename, "kany_data_%d/N%d_Sw_walk%d_fts%1.2f.out",K,N,walklengths[ilength],fts);
+     //     sprintf(filename, "kany_data_f01_%d/N%d_Sw_walk%d_fts%1.2f_TsTv.out",K,N,walklengths[ilength],fts);
+     //     fpout = fopen(filename,"w");
+     //     for (iwalk=0;iwalk<nwalks;iwalk++)
+     //       fprintf(fpout,"%f %f\n",fbenmu[iwalk][0][ilength],fbenmu[iwalk][1][ilength]);
+     //     fclose(fpout);
+     sprintf(filename, "kany_data_f01_%d/N%d_Sw_walk%d_fts%1.2f.out",K,N,walklengths[ilength],fts);
      fpout = fopen(filename,"w");
      if (fpout==NULL) { fprintf(stdout,"Unable to open output file\n"); exit(1);}  
      
@@ -251,6 +259,8 @@ double sums[20], dfemu;
 }  // end of main
 
 void transition(int seq[MAXN],int pos,int newseq[MAXN])
+// using standard codon model order
+// 0 = T, 1 = C, 2 = A, 3 = G
 {
 for (int i=0;i<N;i++) newseq[i]=seq[i];
 switch(seq[pos]) {
@@ -297,29 +307,29 @@ Note that this proportion (fts) will be maintained independent of the
 GC content of the genome.  So fts corresponds to the actually realized
 proportion of GC to AT mutations.  This should be kept in mind when
 interpreting results if the genome GC content changes.  */
-
+  
 for (i=0;i<N;i++) newseq[i]=seq[i];
  muprob = rand()/(double)RAND_MAX;
  if (muprob<ffixed) {  // we want AT to AT or GC to GC
   pos = (int)(N*(rand()/(double)RAND_MAX));
   switch(seq[pos]) {
-    case 0: newseq[pos] = 1; break;
-    case 1: newseq[pos] = 0; break;
-    case 2: newseq[pos] = 3; break;
-    case 3: newseq[pos] = 2; break;
+    case 0: newseq[pos] = 2; break;
+    case 2: newseq[pos] = 0; break;
+    case 1: newseq[pos] = 3; break;
+    case 3: newseq[pos] = 1; break;
    }
   }
  else {
   if (muprob<(ffixed+fts)) {   // we want GC to AT
    pos = (int)(N*(rand()/(double)RAND_MAX));
-   while (seq[pos]<2)  pos = (int)(N*(rand()/(double)RAND_MAX));
+   while ((seq[pos]==2||seq[pos]==0)  pos = (int)(N*(rand()/(double)RAND_MAX));
    if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 0;
-   else newseq[pos] = 1;
+   else newseq[pos] = 2;
   }
   else {// we want AT to GC
    pos = (int)(N*(rand()/(double)RAND_MAX));
-   while (seq[pos]>1)  pos = (int)(N*(rand()/(double)RAND_MAX));
-   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 2;
+   while ((seq[pos]==1)||seq[pos]==3)  pos = (int)(N*(rand()/(double)RAND_MAX));
+   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 1;
    else newseq[pos] = 3;
   }
  }

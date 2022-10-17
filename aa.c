@@ -310,6 +310,8 @@ float gasdev(long *), poidev(float, long *), ran1(long *);
 }  // end of main
 
 void transition(int seq[MAXN],int pos,int newseq[MAXN])
+// C and T are 1 and 0
+// A and G are 2 and 3
 {
 for (int i=0;i<NB;i++) newseq[i]=seq[i];
 switch(seq[pos]) {
@@ -353,23 +355,23 @@ for (i=0;i<NB;i++) newseq[i]=seq[i];
  if (muprob<ffixed) {  // we want AT to AT or GC to GC
   pos = (int)(NB*(rand()/(double)RAND_MAX));
   switch(seq[pos]) {
-    case 0: newseq[pos] = 1; break;
-    case 1: newseq[pos] = 0; break;
-    case 2: newseq[pos] = 3; break;
-    case 3: newseq[pos] = 2; break;
+    case 0: newseq[pos] = 2; break;
+    case 2: newseq[pos] = 0; break;
+    case 1: newseq[pos] = 3; break;
+    case 3: newseq[pos] = 1; break;
    }
   }
  else {
   if (muprob<(ffixed+fts)) {   // we want GC to AT
    pos = (int)(NB*(rand()/(double)RAND_MAX));
-   while (seq[pos]<2)  pos = (int)(NB*(rand()/(double)RAND_MAX));
+   while ((seq[pos]==0)||seq[pos]==2)  pos = (int)(NB*(rand()/(double)RAND_MAX));
    if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 0;
-   else newseq[pos] = 1;
+   else newseq[pos] = 2;
   }
   else {// we want AT to GC
    pos = (int)(NB*(rand()/(double)RAND_MAX));
-   while (seq[pos]>1)  pos = (int)(NB*(rand()/(double)RAND_MAX));
-   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 2;
+   while ((seq[pos]==1)||seq[pos]==3)  pos = (int)(NB*(rand()/(double)RAND_MAX));
+   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 1;
    else newseq[pos] = 3;
   }
  }
@@ -377,70 +379,75 @@ for (i=0;i<NB;i++) newseq[i]=seq[i];
 
 void initialize_ctoa(int ctoa[4][4][4])
 {
-  ctoa[0][0][0] = 0;
+  // using codon table in standard form
+  // 0 = U = T
+  // 1 = C
+  // 2 = A
+  // 3 = G
+  ctoa[0][0][0] = 0; // phe
   ctoa[0][0][1] = 0;
-  ctoa[0][0][2] = 1;
+  ctoa[0][0][2] = 1; // leu
   ctoa[0][0][3] = 1;
-  ctoa[0][1][0] = 2;
+  ctoa[0][1][0] = 2; // ser
   ctoa[0][1][1] = 2;
   ctoa[0][1][2] = 2;
   ctoa[0][1][3] = 2;
-  ctoa[0][2][0] = 3;
+  ctoa[0][2][0] = 3; // tyr
   ctoa[0][2][1] = 3;
-  ctoa[0][2][2] = 4;
+  ctoa[0][2][2] = 4; // stop (we pretend this is just another codon)
   ctoa[0][2][3] = 4;
-  ctoa[0][3][0] = 5;
+  ctoa[0][3][0] = 5; // cys
   ctoa[0][3][1] = 5;
   ctoa[0][3][2] = 4;
-  ctoa[0][3][3] = 6;
+  ctoa[0][3][3] = 6; // trp
 
   ctoa[1][0][0] = 1;
   ctoa[1][0][1] = 1;
   ctoa[1][0][2] = 1;
   ctoa[1][0][3] = 1;
-  ctoa[1][1][0] = 7;
+  ctoa[1][1][0] = 7; // pro
   ctoa[1][1][1] = 7;
   ctoa[1][1][2] = 7;
   ctoa[1][1][3] = 7;
-  ctoa[1][2][0] = 8;
+  ctoa[1][2][0] = 8; // his
   ctoa[1][2][1] = 8;
-  ctoa[1][2][2] = 9;
+  ctoa[1][2][2] = 9; // gln
   ctoa[1][2][3] = 9;
-  ctoa[1][3][0] = 10;
+  ctoa[1][3][0] = 10; // arg
   ctoa[1][3][1] = 10;
   ctoa[1][3][2] = 10;
   ctoa[1][3][3] = 10;
 
-  ctoa[2][0][0] = 11;
+  ctoa[2][0][0] = 11; // ile
   ctoa[2][0][1] = 11;
   ctoa[2][0][2] = 11;
-  ctoa[2][0][3] = 12;
-  ctoa[2][1][0] = 13;
+  ctoa[2][0][3] = 12; // met
+  ctoa[2][1][0] = 13; // thr
   ctoa[2][1][1] = 13;
   ctoa[2][1][2] = 13;
   ctoa[2][1][3] = 13;
-  ctoa[2][2][0] = 14;
+  ctoa[2][2][0] = 14; // asn
   ctoa[2][2][1] = 14;
-  ctoa[2][2][2] = 15;
+  ctoa[2][2][2] = 15; // lys
   ctoa[2][2][3] = 15;
   ctoa[2][3][0] = 2;
   ctoa[2][3][1] = 2;
   ctoa[2][3][2] = 10;
   ctoa[2][3][3] = 10;
 
-  ctoa[3][0][0] = 16;
+  ctoa[3][0][0] = 16; // val
   ctoa[3][0][1] = 16;
   ctoa[3][0][2] = 16;
   ctoa[3][0][3] = 16;
-  ctoa[3][1][0] = 17;
+  ctoa[3][1][0] = 17; // ala
   ctoa[3][1][1] = 17;
   ctoa[3][1][2] = 17;
   ctoa[3][1][3] = 17;
-  ctoa[3][2][0] = 18;
+  ctoa[3][2][0] = 18; // asp
   ctoa[3][2][1] = 18;
-  ctoa[3][2][2] = 19;
+  ctoa[3][2][2] = 19; // glu
   ctoa[3][2][3] = 19;
-  ctoa[3][3][0] = 20;
+  ctoa[3][3][0] = 20; // gly
   ctoa[3][3][1] = 20;
   ctoa[3][3][2] = 20;
   ctoa[3][3][3] = 20;

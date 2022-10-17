@@ -17,7 +17,7 @@ int N=200;  // genome length, global variable
 void main() 
 {
 
-int gc_flag = 0;  // if this flag = 0, run ts:tv case; if 1, run at:gc case
+int gc_flag = 1;  // if this flag = 0, run ts:tv case; if 1, run at:gc case
 int nsteps;  // nsteps is number of accepted steps in adaptive walk
 int maxwalklength = 1e4;  // maxwalklength is how many possible new mutations
                            // are generated and tested during the adaptive walk.
@@ -63,7 +63,7 @@ double wtmp, s;
 // and generate NEW walks from time 0 to time 2e4, rather than continue the walks used
 // for 1e4.  This could be easily changed.
 
-// int walklengths[1] = {5e5}, nlengths = 1;
+// int walklengths[1] = {2.5e4}, nlengths = 1;
  int walklengths[6] = {1e4, 2e4, 5e4, 1e5, 2e5, 5e5}, nlengths = 6;
 // int walklengths[12] = {3e4, 4e4, 6e4, 7e4, 8e4, 9e4, 12e4, 14e4, 16e4, 18e4, 3e5, 4e5}, nlengths = 12;
 
@@ -77,10 +77,10 @@ for (ilength=0;ilength<nlengths;ilength++) {  // loop over walk lengths
     // uncomment only one of the two lines below, depending on whether we want
     // to investigate a range of wt fts (waterfall plot), or a single fixed wt fts
 // for (fts=ftstep;fts<=1-ffixed;fts+=ftstep) {
-for (fts=0.5; fts<=0.5; fts+=ftstep) {
+for (fts=0.35; fts<=0.35; fts+=ftstep) {
 
 // put your output filename here, in this example "Sw" means s-weighted walk
- sprintf(filename, "data/N%d_Sw_walk%d_fts%1.2f.out",N,maxwalklength,fts);
+ sprintf(filename, "gc_data/N%d_Sw_walk%d_fts%1.2f.out",N,maxwalklength,fts);
  fpout = fopen(filename,"w");
   
  for (iwalk=0;iwalk<nwalks;iwalk++) {  // loop over walks
@@ -168,8 +168,8 @@ for (fts=0.5; fts<=0.5; fts+=ftstep) {
   // (or gc:at bias).
   ispec = 0;
   // loop over ts fraction of mutator, edit the line below for gc:at case as needed
-  for (ftsmu=ftstep;ftsmu<=1-ftstep;ftsmu+=ftstep) { 
-//   for (ftsmu=0.05; ftsmu<=1-ffixed; ftsmu+=ftstep) {  // example for gc:at case
+  //  for (ftsmu=ftstep;ftsmu<=1-ftstep;ftsmu+=ftstep) { 
+  for (ftsmu=0.05; ftsmu<=1-ffixed; ftsmu+=ftstep) {  // example for gc:at case
     // make a dfe for this mutator, exactly as described above for the wt
     npos=0; nneg = 0; sumpos=0; sumneg=0;
     for (imute=0;imute<nmutes;imute++) { 
@@ -250,7 +250,9 @@ fclose(fpout);
 }
 
 void transition(int seq[MAXN],int pos,int newseq[MAXN])
-// give sequence seq, make a random transition at position pos to form newseq
+// using standard codon model ordering:
+// T = 0, C = 1
+// A = 2, G = 3
 {
 for (int i=0;i<N;i++) newseq[i]=seq[i]; // first make a copy of seq into newseq
 // then make a transition at position pos 
@@ -301,23 +303,23 @@ for (i=0;i<N;i++) newseq[i]=seq[i];  // first copy seq to newseq
  if (muprob<ffixed) {  // we want AT to AT or GC to GC
   pos = (int)(N*(rand()/(double)RAND_MAX));
   switch(seq[pos]) {
-    case 0: newseq[pos] = 1; break;
-    case 1: newseq[pos] = 0; break;
-    case 2: newseq[pos] = 3; break;
-    case 3: newseq[pos] = 2; break;
+    case 0: newseq[pos] = 2; break;
+    case 2: newseq[pos] = 0; break;
+    case 1: newseq[pos] = 3; break;
+    case 3: newseq[pos] = 1; break;
    }
   }
  else {
   if (muprob<(ffixed+fts)) {   // we want GC to AT
    pos = (int)(N*(rand()/(double)RAND_MAX));
-   while (seq[pos]<2)  pos = (int)(N*(rand()/(double)RAND_MAX));
+   while ((seq[pos]==0)||seq[pos]==2)  pos = (int)(N*(rand()/(double)RAND_MAX));
    if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 0;
-   else newseq[pos] = 1;
+   else newseq[pos] = 2;
   }
   else {// we want AT to GC
    pos = (int)(N*(rand()/(double)RAND_MAX));
-   while (seq[pos]>1)  pos = (int)(N*(rand()/(double)RAND_MAX));
-   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 2;
+   while ((seq[pos]==1)||seq[pos]==3)  pos = (int)(N*(rand()/(double)RAND_MAX));
+   if ((rand()/(double)RAND_MAX)<0.5) newseq[pos] = 1;
    else newseq[pos] = 3;
   }
  }
